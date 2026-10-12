@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Універсальний модуль тестів</title>
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+  <style>
+    :root {
+      --bg-color: #0b0f19;
+      --card-bg: rgba(20, 25, 40, 0.6);
+      --border-color: rgba(60, 130, 246, 0.3);
+      --accent: #3b82f6;
+      --accent-glow: 0 0 10px rgba(59, 130, 246, 0.5);
+      --correct: #10b981;
+      --wrong: #ef4444;
+      --text: #e2e8f0;
+      --text-muted: #94a3b8;
+    }
+
+    * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    
+    body {
+      background-color: var(--bg-color);
+      color: var(--text);
+      margin: 0; padding: 20px;
+      line-height: 1.5;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    /* Glassmorphism Cards */
+    .module-block {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    }
+
+    h1, h2, h3 { color: #fff; margin-top: 0; }
+    h2 { font-size: 1.2rem; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 15px; }
+
+    /* Single Choice */
+    .radio-option {
+      display: block; padding: 8px 12px; margin: 8px 0;
+      background: rgba(255,255,255,0.05); border-radius: 6px;
+      cursor: pointer; border: 1px solid transparent; transition: 0.2s;
+    }
+    .radio-option:hover { background: rgba(255,255,255,0.1); }
+    input[type="radio"] { margin-right: 10px; accent-color: var(--accent); }
+
+    /* Drag & Drop Sorting */
+    .sort-container { display: flex; gap: 15px; flex-wrap: wrap; }
+    .drop-zone {
+      flex: 1; min-width: 200px;
+      background: rgba(0,0,0,0.3); border: 1px dashed var(--accent);
+      border-radius: 8px; padding: 10px; min-height: 120px;
+    }
+    .drop-zone h3 { font-size: 1rem; text-align: center; color: var(--accent); margin-bottom: 10px; }
+    
+    .draggable-item {
+      background: rgba(59, 130, 246, 0.2); border: 1px solid var(--accent);
+      padding: 8px; margin-bottom: 8px; border-radius: 6px;
+      cursor: grab; font-size: 0.9rem; text-align: center;
+    }
+    .draggable-item:active { cursor: grabbing; }
+
+    /* Fill in Blanks */
+    .fill-in-text { line-height: 2; font-size: 1rem; }
+    .fill-input {
+      background: rgba(0,0,0,0.5); border: 1px solid var(--border-color);
+      color: #fff; padding: 4px 8px; border-radius: 4px; width: 120px;
+      text-align: center; outline: none; transition: 0.3s;
+    }
+    .fill-input:focus { border-color: var(--accent); box-shadow: var(--accent-glow); }
+
+    /* Buttons */
+    .btn-check {
+      display: block; width: 100%; padding: 15px;
+      background: var(--accent); color: #fff; font-size: 1.1rem;
+      border: none; border-radius: 8px; cursor: pointer;
+      text-transform: uppercase; font-weight: bold;
+      box-shadow: var(--accent-glow); transition: 0.3s;
+    }
+    .btn-check:hover { background: #2563eb; transform: translateY(-2px); }
+
+    /* Results */
+    .correct { border-color: var(--correct) !important; background: rgba(16, 185, 129, 0.1) !important; }
+    .wrong { border-color: var(--wrong) !important; background: rgba(239, 68, 68, 0.1) !important; }
+    .source-bank { border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 10px; margin-bottom: 15px; min-height: 60px; }
+  </style>
+</head>
+<body>
+
+<div class="container" id="app">
+  <!-- JavaScript буде генерувати контент сюди -->
+</div>
+
+<script>
+// ==========================================
+// 1. КОНФІГУРАЦІЯ (БАЗА ДАНИХ ТЕСТУ)
+// ==========================================
+// Щоб створити новий тест, потрібно просто змінити цей об'єкт.
+const TEST_CONFIG = {
+  title: "Універсальний модуль: ОС та Файли",
+  description: "Виконай завдання. Движок сам перевірить результати.",
+  blocks: [
+    {
+      id: "q1",
+      type: "single_choice",
+      title: "Блок 1. Тестові завдання",
+      question: "Що таке операційна система (ОС)?",
+      options: [
+        "Програма для малювання",
+        "Комплекс програм, який керує пристроями",
+        "Антивірусна програма"
+      ],
+      correctAnswer: 1 // Індекс правильної відповіді (відлік з 0)
+    },
+    {
+      id: "q2",
+      type: "fill_in",
+      title: "Блок 2. Доповнення тексту",
+      text: "Повне ім'я файлу складається з власної назви, крапки та [розширення]. Ярлик — це файл-посилання для швидкого [запуску] програм.",
+      // Слова в квадратних дужках автоматично перетворяться на поля вводу
+    },
+    {
+      id: "q3",
+      type: "drag_sort",
+      title: "Блок 3. Сортування файлів",
+      categories: ["Тексти", "Зображення"], // Папки
+      items: [
+        { id: "i1", text: "Referat.docx", category: "Тексти" },
+        { id: "i2", text: "Priroda.jpg", category: "Зображення" },
+        { id: "i3", text: "Pravila.pdf", category: "Тексти" },
+        { id: "i4", text: "Foto.png", category: "Зображення" }
+      ]
+    },
+    {
+      id: "q4",
+      type: "drag_order",
+      title: "Блок 4. Відновлення послідовності",
+      description: "Розстав кроки створення папки у правильному порядку:",
+      items: [
+        { id: "s1", text: "Відкрити додаток «Мої файли»", order: 1 },
+        { id: "s2", text: "Обрати пункт «Створити папку»", order: 2 },
+        { id: "s3", text: "Ввести назву папки", order: 3 },
+        { id: "s4", text: "Натиснути кнопку «Створити»", order: 4 }
+      ]
+    }
+  ]
+};
+
+// ==========================================
+// 2. ДВИЖОК (ГЕНЕРАЦІЯ HTML ТА ЛОГІКА)
+// ==========================================
+class TestEngine {
+  constructor(config, containerId) {
+    this.config = config;
+    this.container = document.getElementById(containerId);
+    this.answers = {}; // Зберігання відповідей користувача
+    this.init();
+  }
+
+  init() {
+    this.renderHeader();
+    this.config.blocks.forEach(block => {
+      let blockHTML = document.createElement('div');
+      blockHTML.className = 'module-block';
+      blockHTML.innerHTML = `<h2>${block.title}</h2>`;
+      
+      if (block.type === 'single_choice') this.renderSingleChoice(block, blockHTML);
+      if (block.type === 'fill_in') this.renderFillIn(block, blockHTML);
+      if (block.type === 'drag_sort') this.renderDragSort(block, blockHTML);
+      if (block.type === 'drag_order') this.renderDragOrder(block, blockHTML);
+
+      this.container.appendChild(blockHTML);
+    });
+    this.renderFooter();
+    this.initSortable();
+  }
+
+  renderHeader() {
+    const header = document.createElement('div');
+    header.innerHTML = `<h1>${this.config.title}</h1><p style="color:var(--text-muted); margin-bottom:30px;">${this.config.description}</p>`;
+    this.container.appendChild(header);
+  }
+
+  renderSingleChoice(block, container) {
+    let html = `<p>${block.question}</p>`;
+    block.options.forEach((opt, idx) => {
+      html += `
+        <label class="radio-option">
+          <input type="radio" name="${block.id}" value="${idx}"> ${opt}
+        </label>`;
+    });
+    container.innerHTML += html;
+  }
+
+  renderFillIn(block, container) {
+    // Парсимо текст: замінюємо [слово] на input
+    let text = block.text;
+    const regex = /\[(.*?)\]/g;
+    let match;
+    let counter = 0;
+    block.correctAnswers = []; // Зберігаємо правильні відповіді в об'єкті блоку
+
+    while ((match = regex.exec(block.text)) !== null) {
+      block.correctAnswers.push(match[1].toLowerCase());
+      text = text.replace(match[0], `<input type="text" class="fill-input" data-block="${block.id}" data-index="${counter}">`);
+      counter++;
+    }
+    container.innerHTML += `<div class="fill-in-text">${text}</div>`;
+  }
+
+  renderDragSort(block, container) {
+    // Створюємо загальний банк елементів
+    let bankHTML = `<div class="source-bank sort-zone" id="bank-${block.id}">`;
+    // Перемішуємо елементи
+    let shuffled = [...block.items].sort(() => Math.random() - 0.5);
+    shuffled.forEach(item => {
+      bankHTML += `<div class="draggable-item" data-id="${item.id}" data-category="${item.category}">${item.text}</div>`;
+    });
+    bankHTML += `</div><div class="sort-container">`;
+    
+    // Створюємо зони для категорій
+    block.categories.forEach(cat => {
+      bankHTML += `
+        <div class="drop-zone sort-zone" data-target="${cat}">
+          <h3>${cat}</h3>
+        </div>`;
+    });
+    bankHTML += `</div>`;
+    container.innerHTML += bankHTML;
+  }
+
+  renderDragOrder(block, container) {
+    container.innerHTML += `<p style="color:var(--text-muted); font-size:0.9rem;">${block.description}</p>`;
+    let listHTML = `<div class="source-bank sort-zone" id="order-${block.id}" style="display:flex; flex-direction:column; gap:5px;">`;
+    let shuffled = [...block.items].sort(() => Math.random() - 0.5);
+    shuffled.forEach(item => {
+      listHTML += `<div class="draggable-item" data-id="${item.id}" data-order="${item.order}">${item.text}</div>`;
+    });
+    listHTML += `</div>`;
+    container.innerHTML += listHTML;
+  }
+
+  renderFooter() {
+    const btn = document.createElement('button');
+    btn.className = 'btn-check';
+    btn.innerText = 'Перевірити результати';
+    btn.onclick = () => this.checkAnswers();
+    this.container.appendChild(btn);
+  }
+
+  initSortable() {
+    // Ініціалізація Drag & Drop за допомогою бібліотеки SortableJS
+    document.querySelectorAll('.sort-zone').forEach(zone => {
+      new Sortable(zone, {
+        group: 'shared', // дозволяє перетягувати між зонами
+        animation: 150,
+        ghostClass: 'draggable-ghost'
+      });
+    });
+  }
+
+  checkAnswers() {
+    let score = 0;
+    
+    this.config.blocks.forEach(block => {
+      // 1. Перевірка радіо-кнопок
+      if (block.type === 'single_choice') {
+        const selected = document.querySelector(`input[name="${block.id}"]:checked`);
+        const labels = document.querySelectorAll(`input[name="${block.id}"]`);
+        labels.forEach(input => {
+           input.parentElement.classList.remove('correct', 'wrong');
+           if(parseInt(input.value) === block.correctAnswer) input.parentElement.classList.add('correct');
+        });
+        
+        if (selected && parseInt(selected.value) === block.correctAnswer) {
+          score++;
+        } else if (selected) {
+          selected.parentElement.classList.add('wrong');
+        }
+      }
+
+      // 2. Перевірка доповнення тексту
+      if (block.type === 'fill_in') {
+        const inputs = document.querySelectorAll(`input[data-block="${block.id}"]`);
+        inputs.forEach((input, idx) => {
+          input.classList.remove('correct', 'wrong');
+          if (input.value.trim().toLowerCase() === block.correctAnswers[idx]) {
+            input.classList.add('correct');
+            score++;
+          } else {
+            input.classList.add('wrong');
+          }
+        });
+      }
+
+      // 3. Перевірка сортування (Drag & Drop)
+      if (block.type === 'drag_sort') {
+        const zones = document.querySelectorAll(`[data-target]`);
+        zones.forEach(zone => {
+          const targetCategory = zone.getAttribute('data-target');
+          const items = zone.querySelectorAll('.draggable-item');
+          items.forEach(item => {
+            item.classList.remove('correct', 'wrong');
+            if (item.getAttribute('data-category') === targetCategory) {
+              item.classList.add('correct');
+              score++;
+            } else {
+              item.classList.add('wrong');
+            }
+          });
+        });
+      }
+
+      // 4. Перевірка послідовності
+      if (block.type === 'drag_order') {
+        const container = document.getElementById(`order-${block.id}`);
+        const items = container.querySelectorAll('.draggable-item');
+        items.forEach((item, idx) => {
+           item.classList.remove('correct', 'wrong');
+           if (parseInt(item.getAttribute('data-order')) === (idx + 1)) {
+             item.classList.add('correct');
+             score++;
+           } else {
+             item.classList.add('wrong');
+           }
+        });
+      }
+    });
+
+    alert(`Перевірку завершено! Помилки підсвічено червоним, правильні — зеленим.`);
+  }
+}
+
+// Запуск движка після завантаження сторінки
+document.addEventListener('DOMContentLoaded', () => {
+  new TestEngine(TEST_CONFIG, 'app');
+});
+</script>
+</body>
+</html>

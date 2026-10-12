@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Кабінет викладача | Конструктор</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="output.css">
+</head>
+<body class="min-h-screen py-6 px-4">
+
+    <div class="max-w-4xl mx-auto space-y-6">
+        <header class="text-center mb-8">
+            <h1 class="text-2xl sm:text-3xl font-bold mb-2 tracking-tight">
+                <span class="neon-text-cyan">OS Explorer</span> Кабінет викладача
+            </h1>
+            <p class="text-slate-400 text-sm">Створення нового тесту та генерація посилання</p>
+        </header>
+
+        <!-- БЛОК 1: Основна інформація -->
+        <section class="glass-panel p-5">
+            <h2 class="text-lg font-bold text-white mb-4 border-b border-slate-700 pb-2">1. Основна інформація</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">Головне слово (з неоновим ефектом)</label>
+                    <input type="text" id="meta-highlight" class="w-full bg-slate-900/80 border border-slate-700 rounded py-2 px-3 text-sm focus:border-cyan-500 text-white outline-none transition-colors" value="OS Explorer">
+                </div>
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">Продовження назви</label>
+                    <input type="text" id="meta-main" class="w-full bg-slate-900/80 border border-slate-700 rounded py-2 px-3 text-sm focus:border-cyan-500 text-white outline-none transition-colors" value="Практикум">
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-xs text-slate-400 mb-1">Підзаголовок (опис тесту)</label>
+                    <input type="text" id="meta-subtitle" class="w-full bg-slate-900/80 border border-slate-700 rounded py-2 px-3 text-sm focus:border-cyan-500 text-white outline-none transition-colors" value="Тема 1. Комплексна перевірка">
+                </div>
+            </div>
+        </section>
+
+        <!-- БЛОК 2: Модулі із завданнями -->
+        <section class="glass-panel p-5">
+            <h2 class="text-lg font-bold text-white mb-4 border-b border-slate-700 pb-2">2. Блоки із завданнями</h2>
+            
+            <p class="text-xs text-slate-400 mb-3">Використовуйте кнопки для вставки шаблонів завдань. Уважно редагуйте текст всередині лапок.</p>
+            
+            <!-- Панель інструментів (кнопки) -->
+            <div class="flex flex-wrap gap-2 mb-4">
+                <button onclick="insertTemplate('radio')" class="bg-cyan-900/40 hover:bg-cyan-800/60 border border-cyan-700 text-cyan-300 px-2 py-1.5 rounded text-[11px] font-medium transition-colors">+ Один варіант</button>
+                <button onclick="insertTemplate('pairs')" class="bg-purple-900/40 hover:bg-purple-800/60 border border-purple-700 text-purple-300 px-2 py-1.5 rounded text-[11px] font-medium transition-colors">+ Логічні пари</button>
+                <button onclick="insertTemplate('ordering')" class="bg-pink-900/40 hover:bg-pink-800/60 border border-pink-700 text-pink-300 px-2 py-1.5 rounded text-[11px] font-medium transition-colors">+ Впорядкування</button>
+                <button onclick="insertTemplate('sorting')" class="bg-emerald-900/40 hover:bg-emerald-800/60 border border-emerald-700 text-emerald-300 px-2 py-1.5 rounded text-[11px] font-medium transition-colors">+ Сортування</button>
+                <button onclick="insertTemplate('mistakes')" class="bg-orange-900/40 hover:bg-orange-800/60 border border-orange-700 text-orange-300 px-2 py-1.5 rounded text-[11px] font-medium transition-colors">+ Знайти помилки</button>
+                <button onclick="insertTemplate('fillIn')" class="bg-indigo-900/40 hover:bg-indigo-800/60 border border-indigo-700 text-indigo-300 px-2 py-1.5 rounded text-[11px] font-medium transition-colors">+ Пропуски в тексті</button>
+                <button onclick="insertTemplate('open')" class="bg-teal-900/40 hover:bg-teal-800/60 border border-teal-700 text-teal-300 px-2 py-1.5 rounded text-[11px] font-medium transition-colors">+ Вільна відповідь</button>
+                <button onclick="insertTemplate('typing')" class="bg-rose-900/40 hover:bg-rose-800/60 border border-rose-700 text-rose-300 px-2 py-1.5 rounded text-[11px] font-medium transition-colors">+ Тренажер друку</button>
+            </div>
+            <div class="flex justify-between items-end mb-2 mt-6">
+                <label class="block text-sm font-bold text-slate-300">Редактор завдань (JSON)</label>
+                <button onclick="copyAIPrompt()" class="bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white px-3 py-1.5 rounded text-xs font-bold shadow-[0_0_10px_rgba(167,139,250,0.3)] transition-all active:scale-95 flex items-center gap-1">
+                    ✨ Згенерувати через ШІ (Копіювати промпт)
+                </button>
+            </div>
+
+            <!-- Редактор JSON -->
+            <textarea id="modules-editor" rows="15" class="w-full bg-slate-950 border border-slate-700 rounded py-3 px-4 text-sm font-mono text-emerald-400 focus:border-cyan-500 outline-none transition-colors" spellcheck="false">[
+]</textarea>
+            <p id="json-error" class="text-red-500 text-xs mt-2 hidden">Помилка у структурі завдань! Перевірте коми та дужки.</p>
+        </section>
+
+        <!-- БЛОК 3: Генерація -->
+        <div class="text-center pt-4">
+            <button id="saveBtn" class="bg-cyan-600 hover:bg-cyan-500 text-white px-8 py-3 rounded font-bold shadow-[0_0_15px_rgba(0,242,254,0.3)] transition-all active:scale-95 text-sm">
+                Зберегти тест у базу
+            </button>
+        </div>
+
+        <!-- Результат -->
+        <div id="result-box" class="hidden glass-panel p-6 text-center border border-green-500/50 mt-8">
+            <h3 class="text-lg font-bold text-white mb-2">Тест успішно створено! 🎉</h3>
+            <p class="text-sm text-slate-300 mb-4">Скопіюйте це посилання та надішліть учням:</p>
+            <div class="bg-black/50 border border-slate-600 rounded p-3 flex items-center justify-between gap-4">
+                <input type="text" id="generated-link" class="bg-transparent text-cyan-400 font-mono text-sm w-full outline-none" readonly>
+                <button onclick="copyLink()" class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-1.5 rounded text-xs transition-colors whitespace-nowrap">Скопіювати</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="dashboard.js"></script>
+</body>
+</html>
